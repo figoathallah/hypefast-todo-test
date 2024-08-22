@@ -16,6 +16,7 @@ const Todo: FC<TodoProps> = ({ id, title, status }) => {
   const formRef = useRef<HTMLFormElement>(null);
 
   const [buttonVisible, setButtonVisible] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [todos, setTodos] = useState<TodoProps[]>([]);
 
   const apiUrl = "http://localhost:8000/api/todos/";
@@ -31,6 +32,7 @@ const Todo: FC<TodoProps> = ({ id, title, status }) => {
 
   const handleButtonVisibility = () => {
     setButtonVisible((prevVisible) => !prevVisible);
+    setError(null);
     if (buttonVisible) {
       if (formRef.current) {
         formRef.current.reset();
@@ -96,9 +98,10 @@ const Todo: FC<TodoProps> = ({ id, title, status }) => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!handleValidation) {
-      console.log("Nope, try again");
+    if (formData.title.length > 100) {
+      setError("Title must be shorter than or equal to 100 characters.");
     } else {
+      setError(null);
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -210,6 +213,11 @@ const Todo: FC<TodoProps> = ({ id, title, status }) => {
               </button>
             </div>
           </div>
+          {error && (
+            <div className="d-flex flex-column">
+              <p style={{ color: "red", fontSize: "12px" }}>{error}</p>
+            </div>
+          )}
         </div>
 
         <div className="d-flex justify-content-center">
@@ -264,7 +272,7 @@ const Todo: FC<TodoProps> = ({ id, title, status }) => {
           ) : (
             <div
               className="card card-custom card-rounded card-p shadow mt-4"
-              style={{ width: "100%", maxWidth: "550px" }}
+              style={{ width: "100%", minWidth: "550px" }}
             >
               <div className="d-flex justify-content-center">
                 <p className="mt-5 mb-5">Nothing to do yet.</p>
